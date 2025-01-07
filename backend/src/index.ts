@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./db/connectDB";
 import userRoute from "./routes/user.route";
+import resturantRoute from "./routes/resturant.route";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -26,6 +27,7 @@ app.use(cors(corsOption));
 
 // FOR API
 app.use("/api/v1/user", userRoute);
+app.use("/api/v1/resturant", resturantRoute);
 
 app.listen(PORT, () => {
   connectDB();

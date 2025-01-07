@@ -15,7 +15,7 @@ export const isAuthenticated = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
@@ -37,7 +37,7 @@ export const isAuthenticated = async (
     req.id = decode.userId;
     next();
   } catch (error) {
-    console.log(error);
+    console.log("Authentication Error:", error);
     return res.status(500).json({
       success: false,
       message: "Internal Error arises, user not Authenticated...",
