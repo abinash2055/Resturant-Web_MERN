@@ -13,9 +13,6 @@ import { isAuthenticated } from "../middleware/isAuthenticated";
 
 const router = express.Router();
 
-// Apply `isAuthenticated` middleware globally to all routes
-router.use(isAuthenticated);
-
 // Routes
 router
   .route("/")
