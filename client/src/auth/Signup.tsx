@@ -5,7 +5,7 @@ import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
 import { useUserStore } from "@/store/useUserStore";
 import { Loader2, LockKeyhole, Mail, PhoneOutgoing, User } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup = () => {
   // State for input fields
@@ -19,7 +19,7 @@ const Signup = () => {
   // State for validation errors
   const [errors, setErrors] = useState<Partial<SignupInputState>>({});
   const {signup, loading} = useUserStore();
-
+  const navigate = useNavigate();
 
   // Handler for input field changes
   const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +39,13 @@ const Signup = () => {
       return;
     }
 
+    try {
       await signup(input);
+      navigate("/verify-email");
+    } catch (error) {
+      console.log(error)
+    }
+    
 
     // Simulate API call (replace with actual API logic)
     console.log("Signup Input:", input);

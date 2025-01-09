@@ -17,22 +17,22 @@ type User = {
   profilePicture: string;
   admin: boolean;
   isVerified: boolean;
-}
+};
 
 type UserState = {
   user: User | null;
   isAuthenticated: boolean;
   isCheckingAuth: boolean;
   loading: boolean;
-  signup: (input:SignupInputState) => Promise<void>;
-  login: (input:LoginInputState) => Promise<void>;
+  signup: (input: SignupInputState) => Promise<void>;
+  login: (input: LoginInputState) => Promise<void>;
   verifyEmail: (verificationCode: string) => Promise<void>;
   checkAuthentication: () => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
   updateProfile: (input: any) => Promise<void>;
-}
+};
 
 export const useUserStore = create<UserState>()(
   persist(
@@ -116,14 +116,11 @@ export const useUserStore = create<UserState>()(
       checkAuthentication: async () => {
         try {
           set({ isCheckingAuth: true });
-          const response = await axios.post(
-            `${API_END_POINT}/check-authentication`
-          );
+          const response = await axios.post(`${API_END_POINT}/check-auth`);
           if (response.data.success) {
             console.log(response.data);
             toast.success(response.data.message);
             set({
-              loading: false,
               user: response.data.user,
               isAuthenticated: true,
               isCheckingAuth: false,
@@ -132,7 +129,6 @@ export const useUserStore = create<UserState>()(
         } catch (error: any) {
           toast.error(error.response.data.message);
           set({
-            loading: false,
             isAuthenticated: false,
             isCheckingAuth: false,
           });
