@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 declare global {
@@ -15,32 +15,27 @@ export const isAuthenticated = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies?.token;
-
+    const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "User is not Authenticated...",
+        message: "User not authenticated",
       });
     }
-
-    // Verify the token if it exists
+    // verify the toekn
     const decode = jwt.verify(token, process.env.SECRET_KEY!) as jwt.JwtPayload;
-
-    if (!decode || !decode.userId) {
+    // check is decoding was successfull
+    if (!decode) {
       return res.status(401).json({
         success: false,
-        message: "Invalid Token",
+        message: "Invalid token",
       });
     }
-
     req.id = decode.userId;
     next();
   } catch (error) {
-    console.log("Authentication Error:", error);
     return res.status(500).json({
-      success: false,
-      message: "Internal Error arises, user not Authenticated...",
+      message: "Internal server error",
     });
   }
 };

@@ -15,16 +15,15 @@ export const sendVerificationEmail = async (
     const res = await client.send({
       from: sender,
       to: recipient,
-      subject: "Verify your Email",
-      html: htmlContent.replace("{verigicationToken}", verificationToken),
+      subject: "Verify your email",
+      html: htmlContent.replace("{verificationToken}", verificationToken),
       category: "Email Verification",
     });
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to send email Verification");
+    throw new Error("Failed to send email verification");
   }
 };
-
 export const sendWelcomeEmail = async (email: string, name: string) => {
   const recipient = [{ email }];
   const htmlContent = generateWelcomeEmailHtml(name);
@@ -32,10 +31,10 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
     const res = await client.send({
       from: sender,
       to: recipient,
-      subject: "Verify your Email",
+      subject: "Welcome to PatelEats",
       html: htmlContent,
       template_variables: {
-        company_info_name: "Personal Signature",
+        company_info_name: "PatelEats",
         name: name,
       },
     });
@@ -44,7 +43,6 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
     throw new Error("Failed to send welcome email");
   }
 };
-
 export const sendPasswordResetEmail = async (
   email: string,
   resetURL: string
@@ -55,7 +53,7 @@ export const sendPasswordResetEmail = async (
     const res = await client.send({
       from: sender,
       to: recipient,
-      subject: "Reset your Passwod",
+      subject: "Reset your password",
       html: htmlContent,
       category: "Reset Password",
     });
@@ -64,7 +62,6 @@ export const sendPasswordResetEmail = async (
     throw new Error("Failed to reset password");
   }
 };
-
 export const sendResetSuccessEmail = async (email: string) => {
   const recipient = [{ email }];
   const htmlContent = generateResetSuccessEmailHtml();
@@ -72,7 +69,7 @@ export const sendResetSuccessEmail = async (email: string) => {
     const res = await client.send({
       from: sender,
       to: recipient,
-      subject: "password reset Successfully...",
+      subject: "Password Reset Successfully",
       html: htmlContent,
       category: "Password Reset",
     });

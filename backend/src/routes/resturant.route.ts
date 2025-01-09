@@ -7,7 +7,7 @@ import {
   searchResturant,
   updateOrderStatus,
   updateResturant,
-} from "../controllers/resturant.controller";
+} from "../controllers/restaurant.controller";
 import upload from "../middleware/multer";
 import { isAuthenticated } from "../middleware/isAuthenticated";
 
