@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SignupInputState, userSignupSchema } from "@/schema/userSchema";
+import { useUserStore } from "@/store/useUserStore";
 import { Loader2, LockKeyhole, Mail, PhoneOutgoing, User } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
@@ -17,6 +18,8 @@ const Signup = () => {
 
   // State for validation errors
   const [errors, setErrors] = useState<Partial<SignupInputState>>({});
+  const {signup} = useUserStore();
+
 
   // Handler for input field changes
   const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +28,7 @@ const Signup = () => {
   };
 
   // Handler for form submission
-  const signupSubmitHandler = (e: FormEvent) => {
+  const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
 
     // Form validation
@@ -35,6 +38,8 @@ const Signup = () => {
       setErrors(fieldErrors as Partial<SignupInputState>);
       return;
     }
+
+      await signup(input);
 
     // Simulate API call (replace with actual API logic)
     console.log("Signup Input:", input);
@@ -47,7 +52,7 @@ const Signup = () => {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <form
-        onSubmit={signupSubmitHandler}
+        onSubmit={loginSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
       >
         {/* Title */}

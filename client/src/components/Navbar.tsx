@@ -36,8 +36,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
 import { Separator } from "./ui/separator";
 
 const Navbar = () => {

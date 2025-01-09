@@ -16,9 +16,9 @@ const router = express.Router();
 // Routes
 router
   .route("/")
-  .post(upload.single("imageFile"), createResturant)
+  .post(isAuthenticated, upload.single("imageFile"), createResturant)
   .get(getResturant)
-  .put(upload.single("imageFile"), updateResturant);
+  .put(isAuthenticated, upload.single("imageFile"), updateResturant);
 
 router.route("/order").get(getResturantOrder);
 router.route("/order/:orderId/status").put(updateOrderStatus);
