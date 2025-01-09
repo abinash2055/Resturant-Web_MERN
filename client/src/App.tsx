@@ -1,30 +1,27 @@
 import Login from "./auth/Login";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Signup from "./auth/Signup";
 import ForgotPassword from "./auth/ForgotPassword";
-import {
-  createBrowserRouter,
-  Navigate,
-  RouterProvider,
-} from "react-router-dom";
-import MainLayout from "./layout/ManLayout";
 import ResetPassword from "./auth/ResetPassword";
 import VerifyEmail from "./auth/VerifyEmail";
-import HeroSection from "./components/HeroSection";
+import HereSection from "./components/HereSection";
+import MainLayout from "./layout/MainLayout";
 import Profile from "./components/Profile";
 import SearchPage from "./components/SearchPage";
-import ResturantDetail from "./components/ResturantDetails";
+import RestaurantDetail from "./components/RestaurantDetail";
 import Cart from "./components/Cart";
-import Resturant from "./admin/Resturant";
+import Restaurant from "./admin/Restaurant";
 import AddMenu from "./admin/AddMenu";
 import Orders from "./admin/Orders";
 import Success from "./components/Success";
 import { useUserStore } from "./store/useUserStore";
+import { Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Loading from "./components/Loading";
+import { useThemeStore } from "./store/useThemeStore";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -37,7 +34,6 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-
   if (isAuthenticated && user?.isVerified) {
     return <Navigate to="/" replace />;
   }
@@ -46,13 +42,13 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
 
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isAuthenticated } = useUserStore();
-
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   if (!user?.admin) {
     return <Navigate to="/" replace />;
   }
+
   return children;
 };
 
@@ -67,44 +63,37 @@ const appRouter = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <HeroSection />,
+        element: <HereSection />,
       },
-
       {
         path: "/profile",
         element: <Profile />,
       },
-
       {
         path: "/search/:text",
         element: <SearchPage />,
       },
-
       {
-        path: "/resturant/:id",
-        element: <ResturantDetail />,
+        path: "/restaurant/:id",
+        element: <RestaurantDetail />,
       },
-
       {
         path: "/cart",
         element: <Cart />,
       },
-
       {
         path: "/order/status",
         element: <Success />,
       },
-
-      // ADMIN PART
+      // admin services start from here
       {
-        path: "/admin/resturant",
+        path: "/admin/restaurant",
         element: (
           <AdminRoute>
-            <Resturant />
+            <Restaurant />
           </AdminRoute>
         ),
       },
-
       {
         path: "/admin/menu",
         element: (
@@ -113,7 +102,6 @@ const appRouter = createBrowserRouter([
           </AdminRoute>
         ),
       },
-
       {
         path: "/admin/orders",
         element: (
@@ -124,7 +112,6 @@ const appRouter = createBrowserRouter([
       },
     ],
   },
-
   {
     path: "/login",
     element: (
@@ -133,7 +120,6 @@ const appRouter = createBrowserRouter([
       </AuthenticatedUser>
     ),
   },
-
   {
     path: "/signup",
     element: (
@@ -142,7 +128,6 @@ const appRouter = createBrowserRouter([
       </AuthenticatedUser>
     ),
   },
-
   {
     path: "/forgot-password",
     element: (
@@ -151,12 +136,10 @@ const appRouter = createBrowserRouter([
       </AuthenticatedUser>
     ),
   },
-
   {
     path: "/reset-password",
     element: <ResetPassword />,
   },
-
   {
     path: "/verify-email",
     element: <VerifyEmail />,
@@ -164,13 +147,15 @@ const appRouter = createBrowserRouter([
 ]);
 
 function App() {
-  const { checkAuthentication, isCheckingAuth} = useUserStore();
+  const initializeTheme = useThemeStore((state: any) => state.initializeTheme);
+  const { checkAuthentication, isCheckingAuth } = useUserStore();
+  // checking auth every time when page is loaded
   useEffect(() => {
     checkAuthentication();
-  }, [checkAuthentication])
+    initializeTheme();
+  }, [checkAuthentication]);
 
-  if (isCheckingAuth) return <Loading />
-
+  if (isCheckingAuth) return <Loading />;
   return (
     <main>
       <RouterProvider router={appRouter}></RouterProvider>

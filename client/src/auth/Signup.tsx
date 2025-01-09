@@ -7,53 +7,39 @@ import { Loader2, LockKeyhole, Mail, PhoneOutgoing, User } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+// typescript me type define krne ka 2 trika hota hai
+
 const Signup = () => {
-  // State for input fields
   const [input, setInput] = useState<SignupInputState>({
     fullname: "",
     email: "",
     password: "",
     contact: "",
   });
-
-  // State for validation errors
   const [errors, setErrors] = useState<Partial<SignupInputState>>({});
-  const {signup, loading} = useUserStore();
+  const { signup, loading } = useUserStore();
   const navigate = useNavigate();
-
-  // Handler for input field changes
   const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInput({ ...input, [name]: value });
   };
-
-  // Handler for form submission
   const loginSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
-
-    // Form validation
+    // form validation check start
     const result = userSignupSchema.safeParse(input);
     if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
+      const fieldErrors = result.error.formErrors.fieldErrors;
       setErrors(fieldErrors as Partial<SignupInputState>);
       return;
     }
-
+    // login api implementation start here
     try {
       await signup(input);
       navigate("/verify-email");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    
-
-    // Simulate API call (replace with actual API logic)
-    console.log("Signup Input:", input);
-    setErrors({});
   };
-
-  // Loading state for submission
-  // const loading = false;
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -61,88 +47,77 @@ const Signup = () => {
         onSubmit={loginSubmitHandler}
         className="md:p-8 w-full max-w-md rounded-lg md:border border-gray-200 mx-4"
       >
-        {/* Title */}
-        <div className="mb-4 text-center">
-          <h1 className="font-bold text-2xl">Personal Signature</h1>
+        <div className="mb-4">
+          <h1 className="font-bold text-2xl">PatelEats</h1>
         </div>
-
-        {/* Full Name Input */}
         <div className="mb-4">
           <div className="relative">
             <Input
               type="text"
+              placeholder="Full Name"
               name="fullname"
               value={input.fullname}
               onChange={changeEventHandler}
-              placeholder="Enter your fullname"
               className="pl-10 focus-visible:ring-1"
             />
             <User className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
-            {errors.fullname && (
-              <span className="text-sm text-red-700">{errors.fullname}</span>
+            {errors && (
+              <span className="text-xs text-red-500">{errors.fullname}</span>
             )}
           </div>
         </div>
-
-        {/* Email Input */}
         <div className="mb-4">
           <div className="relative">
             <Input
               type="email"
+              placeholder="Email"
               name="email"
               value={input.email}
               onChange={changeEventHandler}
-              placeholder="Enter your email address"
               className="pl-10 focus-visible:ring-1"
             />
             <Mail className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
-            {errors.email && (
-              <span className="text-sm text-red-700">{errors.email}</span>
+            {errors && (
+              <span className="text-xs text-red-500">{errors.email}</span>
             )}
           </div>
         </div>
-
-        {/* Password Input */}
         <div className="mb-4">
           <div className="relative">
             <Input
               type="password"
+              placeholder="Password"
               name="password"
               value={input.password}
               onChange={changeEventHandler}
-              placeholder="Enter your password"
               className="pl-10 focus-visible:ring-1"
             />
             <LockKeyhole className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
-            {errors.password && (
-              <span className="text-sm text-red-700">{errors.password}</span>
+            {errors && (
+              <span className="text-xs text-red-500">{errors.password}</span>
             )}
           </div>
         </div>
-
-        {/* Contact Input */}
         <div className="mb-4">
           <div className="relative">
             <Input
               type="text"
+              placeholder="Contact"
               name="contact"
               value={input.contact}
               onChange={changeEventHandler}
-              placeholder="Enter your phone number"
               className="pl-10 focus-visible:ring-1"
             />
             <PhoneOutgoing className="absolute inset-y-2 left-2 text-gray-500 pointer-events-none" />
-            {errors.contact && (
-              <span className="text-sm text-red-700">{errors.contact}</span>
+            {errors && (
+              <span className="text-xs text-red-500">{errors.contact}</span>
             )}
           </div>
         </div>
-
-        {/* Submit Button */}
         <div className="mb-10">
           {loading ? (
             <Button disabled className="w-full bg-orange hover:bg-hoverOrange">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please Wait
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
             </Button>
           ) : (
             <Button
@@ -153,8 +128,6 @@ const Signup = () => {
             </Button>
           )}
         </div>
-
-        {/* Separator and Login Link */}
         <Separator />
         <p className="mt-2">
           Already have an account?{" "}

@@ -4,7 +4,7 @@ import axios from "axios";
 import { LoginInputState, SignupInputState } from "@/schema/userSchema";
 import { toast } from "sonner";
 
-const API_END_POINT = "http://localhost:8000/api/v1/user";
+const API_END_POINT = "https://food-app-yt.onrender.com/api/v1/user";
 axios.defaults.withCredentials = true;
 
 type User = {
@@ -41,8 +41,7 @@ export const useUserStore = create<UserState>()(
       isAuthenticated: false,
       isCheckingAuth: true,
       loading: false,
-
-      // For API
+      // signup api implementation
       signup: async (input: SignupInputState) => {
         try {
           set({ loading: true });
@@ -52,7 +51,6 @@ export const useUserStore = create<UserState>()(
             },
           });
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
             set({
               loading: false,
@@ -74,7 +72,6 @@ export const useUserStore = create<UserState>()(
             },
           });
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
             set({
               loading: false,
@@ -100,7 +97,6 @@ export const useUserStore = create<UserState>()(
             }
           );
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
             set({
               loading: false,
@@ -109,29 +105,23 @@ export const useUserStore = create<UserState>()(
             });
           }
         } catch (error: any) {
-          toast.error(error.response.data.message);
+          toast.success(error.response.data.message);
           set({ loading: false });
         }
       },
       checkAuthentication: async () => {
         try {
           set({ isCheckingAuth: true });
-          const response = await axios.post(`${API_END_POINT}/check-auth`);
+          const response = await axios.get(`${API_END_POINT}/check-auth`);
           if (response.data.success) {
-            console.log(response.data);
-            toast.success(response.data.message);
             set({
               user: response.data.user,
               isAuthenticated: true,
               isCheckingAuth: false,
             });
           }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
-          set({
-            isAuthenticated: false,
-            isCheckingAuth: false,
-          });
+        } catch (error) {
+          set({ isAuthenticated: false, isCheckingAuth: false });
         }
       },
       logout: async () => {
@@ -139,19 +129,12 @@ export const useUserStore = create<UserState>()(
           set({ loading: true });
           const response = await axios.post(`${API_END_POINT}/logout`);
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
-            set({
-              loading: false,
-              user: null,
-              isAuthenticated: false,
-            });
+            set({ loading: false, user: null, isAuthenticated: false });
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
-          set({
-            loading: false,
-          });
+          set({ loading: false });
         }
       },
       forgotPassword: async (email: string) => {
@@ -162,17 +145,12 @@ export const useUserStore = create<UserState>()(
             { email }
           );
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
-            set({
-              loading: false,
-            });
+            set({ loading: false });
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
-          set({
-            loading: false,
-          });
+          set({ loading: false });
         }
       },
       resetPassword: async (token: string, newPassword: string) => {
@@ -183,22 +161,16 @@ export const useUserStore = create<UserState>()(
             { newPassword }
           );
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
-            set({
-              loading: false,
-            });
+            set({ loading: false });
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
-          set({
-            loading: false,
-          });
+          set({ loading: false });
         }
       },
       updateProfile: async (input: any) => {
         try {
-          set({ loading: true });
           const response = await axios.put(
             `${API_END_POINT}/profile/update`,
             input,
@@ -209,19 +181,11 @@ export const useUserStore = create<UserState>()(
             }
           );
           if (response.data.success) {
-            console.log(response.data);
             toast.success(response.data.message);
-            set({
-              loading: false,
-              user: response.data.user,
-              isAuthenticated: true,
-            });
+            set({ user: response.data.user, isAuthenticated: true });
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
-          set({
-            loading: false,
-          });
         }
       },
     }),

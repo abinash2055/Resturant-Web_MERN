@@ -4,11 +4,17 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogTitle,
 } from "./ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useUserStore } from "@/store/useUserStore";
+import { CheckoutSessionRequest } from "@/types/orderType";
+import { useCartStore } from "@/store/useCartStore";
+import { useRestaurantStore } from "@/store/useRestaurantStore";
+import { useOrderStore } from "@/store/useOrderStore";
+import { Loader2 } from "lucide-react";
 
 const CheckoutConfirmPage = ({
   open,
@@ -17,34 +23,50 @@ const CheckoutConfirmPage = ({
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { user } = useUserStore();
   const [input, setInput] = useState({
-    name: "",
-    email: "",
-    contact: "",
-    address: "",
-    city: "",
-    country: "",
+    name: user?.fullname || "",
+    email: user?.email || "",
+    contact: user?.contact.toString() || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
   });
+  const { cart } = useCartStore();
+  const { restaurant } = useRestaurantStore();
+  const { createCheckoutSession, loading } = useOrderStore();
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInput({ ...input, [name]: value });
   };
-
-  const checkoutHandler = (e: FormEvent<HTMLFormElement>) => {
+  const checkoutHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // FOR API IMPLEMENTATION
-    console.log(input);
+    // api implementation start from here
+    try {
+      const checkoutData: CheckoutSessionRequest = {
+        cartItems: cart.map((cartItem) => ({
+          menuId: cartItem._id,
+          name: cartItem.name,
+          image: cartItem.image,
+          price: cartItem.price.toString(),
+          quantity: cartItem.quantity.toString(),
+        })),
+        deliveryDetails: input,
+        restaurantId: restaurant?._id as string,
+      };
+      await createCheckoutSession(checkoutData);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle className="text-3xl font-semibold text-center">
-          Review Your Order
-        </DialogTitle>
+        <DialogTitle className="font-semibold">Review Your Order</DialogTitle>
         <DialogDescription className="text-xs">
           Double-check your delivery details and ensure everything is in order.
-          When you are ready, hit the confirm button to finalize your order.
+          When you are ready, hit confirm button to finalize your order
         </DialogDescription>
         <form
           onSubmit={checkoutHandler}
@@ -54,16 +76,16 @@ const CheckoutConfirmPage = ({
             <Label>Fullname</Label>
             <Input
               type="text"
-              name="fullname"
+              name="name"
               value={input.name}
               onChange={changeEventHandler}
             />
           </div>
-
           <div>
             <Label>Email</Label>
             <Input
-              type="text"
+              disabled
+              type="email"
               name="email"
               value={input.email}
               onChange={changeEventHandler}
@@ -101,14 +123,21 @@ const CheckoutConfirmPage = ({
             <Input
               type="text"
               name="country"
-              value={input.address}
+              value={input.country}
               onChange={changeEventHandler}
             />
           </div>
-          <DialogFooter className="cols-span-2 pt-5">
-            <Button className="bg-orange hover:bg-hoverOrange">
-              Continue To Payment
-            </Button>
+          <DialogFooter className="col-span-2 pt-5">
+            {loading ? (
+              <Button disabled className="bg-orange hover:bg-hoverOrange">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button className="bg-orange hover:bg-hoverOrange">
+                Continue To Payment
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

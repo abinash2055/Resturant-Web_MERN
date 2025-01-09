@@ -4,29 +4,30 @@ import {
   Mail,
   MapPin,
   MapPinnedIcon,
-  PhoneCallIcon,
   Plus,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { FormEvent, useRef, useState } from "react";
 import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import React, { FormEvent, useRef, useState } from "react";
 import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import { useUserStore } from "@/store/useUserStore";
 
 const Profile = () => {
+  const { user, updateProfile } = useUserStore();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [profileData, setProfileData] = useState({
-    fullname: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    country: "",
-    profilePiicture: "",
+    fullname: user?.fullname || "",
+    email: user?.email || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
+    profilePicture: user?.profilePicture || "",
   });
-
   const imageRef = useRef<HTMLInputElement | null>(null);
-  const [selectProfilePicture, setSelectProfilePicture] = useState<string>("");
-  const loading = false;
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState<string>(
+    profileData.profilePicture || ""
+  );
 
   const fileChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,10 +35,10 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        setSelectProfilePicture(result);
+        setSelectedProfilePicture(result);
         setProfileData((prevData) => ({
           ...prevData,
-          profilePiicture: result,
+          profilePicture: result,
         }));
       };
       reader.readAsDataURL(file);
@@ -49,10 +50,15 @@ const Profile = () => {
     setProfileData({ ...profileData, [name]: value });
   };
 
-  const updateProfileHandler = (e: FormEvent<HTMLFormElement>) => {
+  const updateProfileHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // FOR UPDATE PROFILE API IMPLEMEMTATION
+    try {
+      setIsLoading(true);
+      await updateProfile(profileData);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,7 +66,7 @@ const Profile = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar className="relative md:w-28 md:h-28 w-20 h-20">
-            <AvatarImage src={selectProfilePicture} />
+            <AvatarImage src={selectedProfilePicture} />
             <AvatarFallback>CN</AvatarFallback>
             <input
               ref={imageRef}
@@ -91,20 +97,9 @@ const Profile = () => {
           <div className="w-full">
             <Label>Email</Label>
             <input
+              disabled
               name="email"
               value={profileData.email}
-              onChange={changeHandler}
-              className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-4 rounded-sm p-2 bg-gray-200">
-          <PhoneCallIcon className="text-gray-500" />
-          <div className="w-full">
-            <Label>Phone</Label>
-            <input
-              name="phone"
-              value={profileData.phone}
               onChange={changeHandler}
               className="w-full text-gray-600 bg-transparent focus-visible:ring-0 focus-visible:border-transparent outline-none border-none"
             />
@@ -148,13 +143,15 @@ const Profile = () => {
         </div>
       </div>
       <div className="text-center">
-        {loading ? (
+        {isLoading ? (
           <Button disabled className="bg-orange hover:bg-hoverOrange">
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-            Please Wait
+            Please wait
           </Button>
         ) : (
-          <Button className="bg-orange hover:bg-hoverOrange">Update</Button>
+          <Button type="submit" className="bg-orange hover:bg-hoverOrange">
+            Update
+          </Button>
         )}
       </div>
     </form>

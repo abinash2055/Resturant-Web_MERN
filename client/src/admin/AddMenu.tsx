@@ -11,29 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus } from "lucide-react";
-import { FormEvent, useState } from "react";
-
+import React, { FormEvent, useState } from "react";
 import EditMenu from "./EditMenu";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
-
-const menus = [
-  {
-    name: "Biryani",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloremque quo aperiam animi.",
-    price: 800,
-    image:
-      "https://www.foodandwine.com/thmb/eAleG5aGQtPlSkaQ15KrwHvjAZk=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/6-Vital-Canadian-Restaurants-FT-4-MAG1223-02cac008b2a443428cec874ac6339c36.jpg",
-  },
-  {
-    name: "Biryani",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloremque quo aperiam animi.",
-    price: 800,
-    image:
-      "https://www.foodandwine.com/thmb/eAleG5aGQtPlSkaQ15KrwHvjAZk=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/6-Vital-Canadian-Restaurants-FT-4-MAG1223-02cac008b2a443428cec874ac6339c36.jpg",
-  },
-];
+import { useMenuStore } from "@/store/useMenuStore";
+import { useRestaurantStore } from "@/store/useRestaurantStore";
 
 const AddMenu = () => {
   const [input, setInput] = useState<MenuFormSchema>({
@@ -43,28 +25,39 @@ const AddMenu = () => {
     image: undefined,
   });
   const [open, setOpen] = useState<boolean>(false);
-  const [error, setError] = useState<Partial<MenuFormSchema>>({});
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<any>();
-  const loading = false;
+  const [error, setError] = useState<Partial<MenuFormSchema>>({});
+  const { loading, createMenu } = useMenuStore();
+  const { restaurant } = useRestaurantStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setInput({ ...input, [name]: type === "number" ? Number(value) : value });
   };
 
-  const submitHandler = (e: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = menuSchema.safeParse(input);
     if (!result.success) {
-      const fieldError = result.error.formErrors.fieldErrors;
-      setError(fieldError as Partial<MenuFormSchema>);
+      const fieldErrors = result.error.formErrors.fieldErrors;
+      setError(fieldErrors as Partial<MenuFormSchema>);
       return;
     }
-
-    // API IMPLEMEMTATION
+    // api ka kaam start from here
+    try {
+      const formData = new FormData();
+      formData.append("name", input.name);
+      formData.append("description", input.description);
+      formData.append("price", input.price.toString());
+      if (input.image) {
+        formData.append("image", input.image);
+      }
+      await createMenu(formData);
+    } catch (error) {
+      console.log(error);
+    }
   };
-
   return (
     <div className="max-w-6xl mx-auto my-10">
       <div className="flex justify-between">
@@ -75,14 +68,14 @@ const AddMenu = () => {
           <DialogTrigger>
             <Button className="bg-orange hover:bg-hoverOrange">
               <Plus className="mr-2" />
-              Add Menu
+              Add Menus
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add a New Menu</DialogTitle>
+              <DialogTitle>Add A New Menu</DialogTitle>
               <DialogDescription>
-                Create a menu that will make your resturant stand out.
+                Create a menu that will make your restaurant stand out.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={submitHandler} className="space-y-4">
@@ -90,10 +83,10 @@ const AddMenu = () => {
                 <Label>Name</Label>
                 <Input
                   type="text"
-                  value={input.name}
                   name="name"
+                  value={input.name}
                   onChange={changeEventHandler}
-                  placeholder="Enter Menu Name"
+                  placeholder="Enter menu name"
                 />
                 {error && (
                   <span className="text-xs font-medium text-red-600">
@@ -108,7 +101,7 @@ const AddMenu = () => {
                   name="description"
                   value={input.description}
                   onChange={changeEventHandler}
-                  placeholder="Enter Menu description"
+                  placeholder="Enter menu description"
                 />
                 {error && (
                   <span className="text-xs font-medium text-red-600">
@@ -123,7 +116,7 @@ const AddMenu = () => {
                   name="price"
                   value={input.price}
                   onChange={changeEventHandler}
-                  placeholder="Enter Menu price"
+                  placeholder="Enter menu price"
                 />
                 {error && (
                   <span className="text-xs font-medium text-red-600">
@@ -142,11 +135,10 @@ const AddMenu = () => {
                       image: e.target.files?.[0] || undefined,
                     })
                   }
-                  placeholder="Upload Menu image"
                 />
                 {error && (
                   <span className="text-xs font-medium text-red-600">
-                    {error.image?.name || "Image is required"}
+                    {error.image?.name}
                   </span>
                 )}
               </div>
@@ -166,21 +158,21 @@ const AddMenu = () => {
           </DialogContent>
         </Dialog>
       </div>
-      {menus.map((menu: any, idx: number) => (
+      {restaurant?.menus.map((menu: any, idx: number) => (
         <div key={idx} className="mt-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg">
+          <div className="flex flex-col md:flex-row md:items-center md:space-x-4 md:p-4 p-2 shadow-md rounded-lg border">
             <img
               src={menu.image}
-              alt=" Menu Image"
+              alt=""
               className="md:h-24 md:w-24 h-16 w-full object-cover rounded-lg"
             />
             <div className="flex-1">
               <h1 className="text-lg font-semibold text-gray-800">
                 {menu.name}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">{menu.description}</p>
+              <p className="text-sm tex-gray-600 mt-1">{menu.description}</p>
               <h2 className="text-md font-semibold mt-2">
-                Price: <span className="text-[#D19254]">800</span>
+                Price: <span className="text-[#D19254]">80</span>
               </h2>
             </div>
             <Button
@@ -196,7 +188,6 @@ const AddMenu = () => {
           </div>
         </div>
       ))}
-
       <EditMenu
         selectedMenu={selectedMenu}
         editOpen={editOpen}

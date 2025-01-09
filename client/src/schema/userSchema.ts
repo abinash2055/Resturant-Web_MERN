@@ -1,26 +1,20 @@
 import { z } from "zod";
 
-// For Signup
 export const userSignupSchema = z.object({
-  fullname: z.string().min(1, { message: "Full name is required" }),
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(7, { message: "Password must be at least 7 characters long." }),
+  fullname: z.string().min(1, "Fullname is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters."),
   contact: z
     .string()
-    .min(10, { message: "Please enter a valid mobile number." })
-    .regex(/^\d+$/, { message: "Contact must contain only digits." }),
+    .min(10, { message: "Contact number at least 10 digit" })
+    .max(10, "Contact number at most 10 digit"),
 });
 
 export type SignupInputState = z.infer<typeof userSignupSchema>;
 
-// For Login
 export const userLoginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(7, { message: "Password must be at least 7 characters long." }),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
 export type LoginInputState = z.infer<typeof userLoginSchema>;

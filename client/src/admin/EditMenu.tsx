@@ -10,6 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MenuFormSchema, menuSchema } from "@/schema/menuSchema";
+import { useMenuStore } from "@/store/useMenuStore";
+import { MenuItem } from "@/types/restaurantType";
 import { Loader2 } from "lucide-react";
 import {
   Dispatch,
@@ -24,7 +26,7 @@ const EditMenu = ({
   editOpen,
   setEditOpen,
 }: {
-  selectedMenu?: MenuFormSchema;
+  selectedMenu: MenuItem;
   editOpen: boolean;
   setEditOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -35,43 +37,52 @@ const EditMenu = ({
     image: undefined,
   });
   const [error, setError] = useState<Partial<MenuFormSchema>>({});
-  const loading = false;
+  const { loading, editMenu } = useMenuStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setInput({ ...input, [name]: type === "number" ? Number(value) : value });
   };
 
-  const submitHandler = (e: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = menuSchema.safeParse(input);
     if (!result.success) {
-      const fieldError = result.error.formErrors.fieldErrors;
-      setError(fieldError as Partial<MenuFormSchema>);
+      const fieldErrors = result.error.formErrors.fieldErrors;
+      setError(fieldErrors as Partial<MenuFormSchema>);
       return;
     }
-    console.log(input);
-    // FOR API IMPLEMENTATION
+
+    // api ka kaam start from here
+    try {
+      const formData = new FormData();
+      formData.append("name", input.name);
+      formData.append("description", input.description);
+      formData.append("price", input.price.toString());
+      if (input.image) {
+        formData.append("image", input.image);
+      }
+      await editMenu(selectedMenu._id, formData);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
-    if (selectedMenu) {
-      setInput({
-        name: selectedMenu.name || "",
-        description: selectedMenu.description || "",
-        price: selectedMenu.price || 0,
-        image: undefined,
-      });
-    }
+    setInput({
+      name: selectedMenu?.name || "",
+      description: selectedMenu?.description || "",
+      price: selectedMenu?.price || 0,
+      image: undefined,
+    });
   }, [selectedMenu]);
-
   return (
     <Dialog open={editOpen} onOpenChange={setEditOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Menu</DialogTitle>
           <DialogDescription>
-            Update your menu to keep your offerings fresh and excitings
+            Update your menu to keep your offerings fresh and exciting!
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submitHandler} className="space-y-4">
@@ -79,10 +90,10 @@ const EditMenu = ({
             <Label>Name</Label>
             <Input
               type="text"
-              value={input.name}
               name="name"
+              value={input.name}
               onChange={changeEventHandler}
-              placeholder="Enter Menu Name"
+              placeholder="Enter menu name"
             />
             {error && (
               <span className="text-xs font-medium text-red-600">
@@ -97,7 +108,7 @@ const EditMenu = ({
               name="description"
               value={input.description}
               onChange={changeEventHandler}
-              placeholder="Enter Menu description"
+              placeholder="Enter menu description"
             />
             {error && (
               <span className="text-xs font-medium text-red-600">
@@ -112,7 +123,7 @@ const EditMenu = ({
               name="price"
               value={input.price}
               onChange={changeEventHandler}
-              placeholder="Enter Menu price"
+              placeholder="Enter menu price"
             />
             {error && (
               <span className="text-xs font-medium text-red-600">
@@ -126,16 +137,12 @@ const EditMenu = ({
               type="file"
               name="image"
               onChange={(e) =>
-                setInput({
-                  ...input,
-                  image: e.target.files?.[0] || undefined,
-                })
+                setInput({ ...input, image: e.target.files?.[0] || undefined })
               }
-              placeholder="Upload Menu image"
             />
             {error && (
               <span className="text-xs font-medium text-red-600">
-                {error.image?.name || "Image is required"}
+                {error.image?.name}
               </span>
             )}
           </div>

@@ -2,65 +2,110 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  ResturantFormSchema,
-  resturantFromSchema,
-} from "@/schema/resturantSchema";
+  RestaurantFormSchema,
+  restaurantFromSchema,
+} from "@/schema/restaurantSchema";
+import { useRestaurantStore } from "@/store/useRestaurantStore";
 import { Loader2 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
-const Resturant = () => {
-  const [input, setInput] = useState<ResturantFormSchema>({
-    resturantName: "",
+const Restaurant = () => {
+  const [input, setInput] = useState<RestaurantFormSchema>({
+    restaurantName: "",
     city: "",
     country: "",
     deliveryTime: 0,
     cuisines: [],
     imageFile: undefined,
   });
-
-  const [errors, setErrors] = useState<Partial<ResturantFormSchema>>({});
+  const [errors, setErrors] = useState<Partial<RestaurantFormSchema>>({});
+  const {
+    loading,
+    restaurant,
+    updateRestaurant,
+    createRestaurant,
+    getRestaurant,
+  } = useRestaurantStore();
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
     setInput({ ...input, [name]: type === "number" ? Number(value) : value });
   };
 
-  const submitHandler = (e: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const result = resturantFromSchema.safeParse(input);
+    const result = restaurantFromSchema.safeParse(input);
     if (!result.success) {
       const fieldErrors = result.error.formErrors.fieldErrors;
-      setErrors(fieldErrors as Partial<ResturantFormSchema>);
+      setErrors(fieldErrors as Partial<RestaurantFormSchema>);
       return;
     }
+    // add restaurant api implementation start from here
+    try {
+      const formData = new FormData();
+      formData.append("restaurantName", input.restaurantName);
+      formData.append("city", input.city);
+      formData.append("country", input.country);
+      formData.append("deliveryTime", input.deliveryTime.toString());
+      formData.append("cuisines", JSON.stringify(input.cuisines));
 
-    // ADD RESTURANT API
-    console.log(input);
+      if (input.imageFile) {
+        formData.append("imageFile", input.imageFile);
+      }
+
+      if (restaurant) {
+        // update
+        await updateRestaurant(formData);
+      } else {
+        // create
+        await createRestaurant(formData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const loading = false;
-  const resturantHai = false;
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      await getRestaurant();
+      if (restaurant) {
+        setInput({
+          restaurantName: restaurant.restaurantName || "",
+          city: restaurant.city || "",
+          country: restaurant.country || "",
+          deliveryTime: restaurant.deliveryTime || 0,
+          cuisines: restaurant.cuisines
+            ? restaurant.cuisines.map((cuisine: string) => cuisine)
+            : [],
+          imageFile: undefined,
+        });
+      }
+    };
+    fetchRestaurant();
+    console.log(restaurant);
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto my-10">
       <div>
         <div>
-          <h1 className="font-extrabold text-2xl mb-5">Add Resturants </h1>
+          <h1 className="font-extrabold text-2xl mb-5">Add Restaurants</h1>
           <form onSubmit={submitHandler}>
             <div className="md:grid grid-cols-2 gap-6 space-y-2 md:space-y-0">
+              {/* Restaurant Name  */}
               <div>
-                <Label>Resturant Name</Label>
+                <Label>Restaurant Name</Label>
                 <Input
                   type="text"
-                  name="resturantName"
-                  value={input.resturantName}
+                  name="restaurantName"
+                  value={input.restaurantName}
                   onChange={changeEventHandler}
-                  placeholder="Enter your Resturant Name"
+                  placeholder="Enter your restaurant name"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
-                    {errors.resturantName}
+                    {errors.restaurantName}
                   </span>
                 )}
               </div>
@@ -71,7 +116,7 @@ const Resturant = () => {
                   name="city"
                   value={input.city}
                   onChange={changeEventHandler}
-                  placeholder="Enter your city Name"
+                  placeholder="Enter your city name"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
@@ -79,7 +124,6 @@ const Resturant = () => {
                   </span>
                 )}
               </div>
-
               <div>
                 <Label>Country</Label>
                 <Input
@@ -87,7 +131,7 @@ const Resturant = () => {
                   name="country"
                   value={input.country}
                   onChange={changeEventHandler}
-                  placeholder="Enter your country Name"
+                  placeholder="Enter your country name"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
@@ -96,13 +140,13 @@ const Resturant = () => {
                 )}
               </div>
               <div>
-                <Label>Estimate Delivery Time</Label>
+                <Label>Delivery Time</Label>
                 <Input
                   type="number"
                   name="deliveryTime"
                   value={input.deliveryTime}
                   onChange={changeEventHandler}
-                  placeholder="Enter your Delivery Time"
+                  placeholder="Enter your delivery time"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
@@ -119,7 +163,7 @@ const Resturant = () => {
                   onChange={(e) =>
                     setInput({ ...input, cuisines: e.target.value.split(",") })
                   }
-                  placeholder="eg: chowins, momos, pizza, burger"
+                  placeholder="e.g. Momos, Biryani"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
@@ -128,7 +172,7 @@ const Resturant = () => {
                 )}
               </div>
               <div>
-                <Label>Upload Resturant Banner</Label>
+                <Label>Upload Restaurant Banner</Label>
                 <Input
                   onChange={(e) =>
                     setInput({
@@ -137,12 +181,12 @@ const Resturant = () => {
                     })
                   }
                   type="file"
-                  accept="images/*"
+                  accept="image/*"
                   name="imageFile"
                 />
                 {errors && (
                   <span className="text-xs text-red-600 font-medium">
-                    {errors.imageFile?.name || "image file is required"}
+                    {errors.imageFile?.name}
                   </span>
                 )}
               </div>
@@ -150,14 +194,14 @@ const Resturant = () => {
             <div className="my-5 w-fit">
               {loading ? (
                 <Button disabled className="bg-orange hover:bg-hoverOrange">
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  Please Wait
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
                 </Button>
               ) : (
                 <Button className="bg-orange hover:bg-hoverOrange">
-                  {resturantHai
-                    ? "Update Your Resturant"
-                    : "Add Your Resturant"}
+                  {restaurant
+                    ? "Update Your Restaurant"
+                    : "Add Your Restaurant"}
                 </Button>
               )}
             </div>
@@ -168,4 +212,4 @@ const Resturant = () => {
   );
 };
 
-export default Resturant;
+export default Restaurant;
