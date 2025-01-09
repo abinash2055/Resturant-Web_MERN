@@ -1,4 +1,7 @@
 import { MailtrapClient } from "mailtrap";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const TOKEN = "6c4d52634d1e3cbc44358698bb59bf90";
 const ENDPOINT = "https://send.api.mailtrap.io/";
@@ -11,3 +14,4 @@ export const sender = {
   email: "mailtrap@demomailtrap.com",
   name: "Personal Signature",
 };
+

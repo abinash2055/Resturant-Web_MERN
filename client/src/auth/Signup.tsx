@@ -18,7 +18,7 @@ const Signup = () => {
 
   // State for validation errors
   const [errors, setErrors] = useState<Partial<SignupInputState>>({});
-  const {signup} = useUserStore();
+  const {signup, loading} = useUserStore();
 
 
   // Handler for input field changes
@@ -47,7 +47,7 @@ const Signup = () => {
   };
 
   // Loading state for submission
-  const loading = false;
+  // const loading = false;
 
   return (
     <div className="flex items-center justify-center min-h-screen">
