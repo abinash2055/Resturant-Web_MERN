@@ -8,8 +8,8 @@ import {
   updateOrderStatus,
   updateResturant,
 } from "../controllers/restaurant.controller";
-import upload from "../middleware/multer";
-import { isAuthenticated } from "../middleware/isAuthenticated";
+import upload from "../middlewares/multer";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = express.Router();
 

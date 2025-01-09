@@ -9,7 +9,7 @@ import {
   updateProfile,
   verifyEmail,
 } from "../controllers/user.controller";
-import { isAuthenticated } from "../middleware/isAuthenticated";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuthenticated } from "../middleware/isAuthenticated";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { createCheckoutSession, getOrders } from "../controllers/order.controller";
 
 const router = express.Router();
